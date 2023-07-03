@@ -2,5 +2,11 @@
   "item.aircraftmod.zircon": "Zircon",
   "item.aircraftmod.raw_zircon": "Raw Zircon",
 
+  "block.aircraftmod.zircon_block": "Block of Zircon",
+  "block.aircraftmod.zircon_ore": "Zircon Ore",
+  "block.aircraftmod.deepslate_zircon_ore": "Deepslate Zircon Ore",
+  "block.aircraftmod.endstone_zircon_ore": "End Zircon Ore",
+  "block.aircraftmod.netherrack_zircon_ore": "Nether Zircon Ore",
+
   "itemGroup.aircrafttab": "Zircon Tutorial Tab"
 }

@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "aircraftmod:block/zircon_block"
+    "all": "aircraftmod:block/netherrack_zircon_ore"
   }
 }
