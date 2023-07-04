@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "aircraftmod:zircon_ore",
+    "aircraftmod:zircon_block",
+    "aircraftmod:deepslate_zircon_ore"
+  ]
+}

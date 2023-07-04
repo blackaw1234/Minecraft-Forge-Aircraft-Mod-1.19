@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 200,
+  "experience": 1.4,
+  "ingredient": {
+    "item": "aircraftmod:raw_zircon"
+  },
+  "result": "aircraftmod:zircon"
+}
