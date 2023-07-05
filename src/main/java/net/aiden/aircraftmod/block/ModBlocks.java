@@ -1,6 +1,7 @@
 package net.aiden.aircraftmod.block;
 
 import net.aiden.aircraftmod.AircraftMod;
+import net.aiden.aircraftmod.block.custom.JumpyBlock;
 import net.aiden.aircraftmod.item.ModCreativeModeTab;
 import net.aiden.aircraftmod.item.ModItems;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -37,6 +38,10 @@ public class ModBlocks {
     public static final RegistryObject<Block> NETHERRACK_ZIRCON_ORE = registerBlock("netherrack_zircon_ore",
             () -> new DropExperienceBlock(BlockBehaviour.Properties.of(Material.STONE)
                     .strength(6f).requiresCorrectToolForDrops(), UniformInt.of(3, 7)), ModCreativeModeTab.AIRCRAFT_TAB);
+
+    public static final RegistryObject<Block> JUMPY_BLOCK = registerBlock("jumpy_block",
+            () -> new JumpyBlock(BlockBehaviour.Properties.of(Material.STONE)
+                    .strength(6f).requiresCorrectToolForDrops()), ModCreativeModeTab.AIRCRAFT_TAB);
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, CreativeModeTab tab)
     {
