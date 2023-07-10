@@ -3,6 +3,7 @@
   "values": [
     "aircraftmod:zircon_ore",
     "aircraftmod:zircon_block",
-    "aircraftmod:deepslate_zircon_ore"
+    "aircraftmod:deepslate_zircon_ore",
+    "aircraftmod:pneumatic_pump"
   ]
 }

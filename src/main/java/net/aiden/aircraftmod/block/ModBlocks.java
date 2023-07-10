@@ -2,6 +2,7 @@ package net.aiden.aircraftmod.block;
 
 import net.aiden.aircraftmod.AircraftMod;
 import net.aiden.aircraftmod.block.custom.JumpyBlock;
+import net.aiden.aircraftmod.block.custom.PneumaticPump;
 import net.aiden.aircraftmod.item.ModCreativeModeTab;
 import net.aiden.aircraftmod.item.ModItems;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -41,6 +42,9 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> JUMPY_BLOCK = registerBlock("jumpy_block",
             () -> new JumpyBlock(BlockBehaviour.Properties.of(Material.STONE)
+                    .strength(6f).requiresCorrectToolForDrops()), ModCreativeModeTab.AIRCRAFT_TAB);
+    public static final RegistryObject<Block> PNEUMATIC_PUMP = registerBlock("pneumatic_pump",
+            () -> new PneumaticPump(BlockBehaviour.Properties.of(Material.PISTON)
                     .strength(6f).requiresCorrectToolForDrops()), ModCreativeModeTab.AIRCRAFT_TAB);
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, CreativeModeTab tab)
