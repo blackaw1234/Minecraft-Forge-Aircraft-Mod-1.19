@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -13,7 +15,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
-import net.minecraft.world.level.block.piston.PistonHeadBlock;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,11 +37,14 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import static net.aiden.aircraftmod.block.ModBlocks.PNEUMATIC_PUMP_HEAD;
 
 public class PneumaticPumpBase extends DirectionalBlock {
     public static final BooleanProperty EXTENDED = BlockStateProperties.EXTENDED;
@@ -70,7 +73,7 @@ public class PneumaticPumpBase extends DirectionalBlock {
         return super.use(state, level, pos, player, hand, result);
     }
 
-    //If the piston's state is extended, return a voxel that defines the box for the piston head I think
+    //If the piston's state is extended, return a voxel that defines the box for the piston base I think
     public VoxelShape getShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext collisionContext) {
         if (state.getValue(EXTENDED)) {
             switch ((Direction)state.getValue(FACING)) {
@@ -100,6 +103,7 @@ public class PneumaticPumpBase extends DirectionalBlock {
 
     }
 
+    //if a neighboring block is changed on the server, checkIfExtend
     public void neighborChanged(BlockState state, Level level, BlockPos pos1, Block block, BlockPos pos2, boolean b) {
         if (!level.isClientSide) {
             this.checkIfExtend(level, pos1, state);
@@ -307,11 +311,13 @@ public class PneumaticPumpBase extends DirectionalBlock {
 
             if (shouldBeExtended) {
                 PistonType pistontype = PistonType.DEFAULT;
-                BlockState blockstate4 = Blocks.PISTON_HEAD.defaultBlockState().setValue(PneumaticPumpHead.FACING, pumpDirection).setValue(PneumaticPumpHead.TYPE, pistontype);
+
+                //CHANGE THISSS to Pump Head
+                BlockState pumpHeadState = PNEUMATIC_PUMP_HEAD.get().defaultBlockState().setValue(PneumaticPumpHead.FACING, pumpDirection).setValue(PneumaticPumpHead.TYPE, pistontype);
                 BlockState blockstate6 = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
                 map.remove(blockpos);
                 level.setBlock(blockpos, blockstate6, 68);
-                level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(blockpos, blockstate6, blockstate4, pumpDirection, true, true));
+                level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(blockpos, blockstate6, pumpHeadState, pumpDirection, true, true));
             }
 
             BlockState blockstate3 = Blocks.AIR.defaultBlockState();
