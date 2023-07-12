@@ -27,6 +27,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import static net.aiden.aircraftmod.block.ModBlocks.PNEUMATIC_PUMP_BASE;
+import static net.aiden.aircraftmod.block.ModBlocks.PNEUMATIC_PUMP_HEAD;
+
 public class PneumaticPumpHead extends DirectionalBlock {
     public static final EnumProperty<PistonType> TYPE = BlockStateProperties.PISTON_TYPE;
     public static final BooleanProperty SHORT = BlockStateProperties.SHORT;
@@ -94,8 +97,11 @@ public class PneumaticPumpHead extends DirectionalBlock {
         return (p_60320_.getValue(SHORT) ? SHAPES_SHORT : SHAPES_LONG)[p_60320_.getValue(FACING).ordinal()];
     }
 
-    private boolean isFittingBase(BlockState testedBase, BlockState p_60299_) {
-        return p_60299_.getClass().getSimpleName() == "PneumaticPumpBase" && p_60299_.getValue(PneumaticPumpBase.EXTENDED) && p_60299_.getValue(FACING) == testedBase.getValue(FACING);
+    private boolean isFittingBase(BlockState headState, BlockState baseState) {
+        boolean isTypeMatch = baseState.is(PNEUMATIC_PUMP_BASE.get());
+        boolean isExtended = baseState.getValue(PneumaticPumpBase.EXTENDED);
+        boolean isAligned = baseState.getValue(FACING) == headState.getValue(FACING);
+        return isTypeMatch && isExtended && isAligned;
     }
 
     public void playerWillDestroy(Level p_60265_, BlockPos p_60266_, BlockState p_60267_, Player p_60268_) {
@@ -120,13 +126,18 @@ public class PneumaticPumpHead extends DirectionalBlock {
         }
     }
 
-    public BlockState updateShape(BlockState p_60301_, Direction p_60302_, BlockState p_60303_, LevelAccessor p_60304_, BlockPos p_60305_, BlockPos p_60306_) {
-        return p_60302_.getOpposite() == p_60301_.getValue(FACING) && !p_60301_.canSurvive(p_60304_, p_60305_) ? Blocks.AIR.defaultBlockState() : super.updateShape(p_60301_, p_60302_, p_60303_, p_60304_, p_60305_, p_60306_);
+    public BlockState updateShape(BlockState headState, Direction p_60302_, BlockState p_60303_, LevelAccessor accessor, BlockPos p_60305_, BlockPos p_60306_) {
+        boolean isAlignedWithPotentialBase = p_60302_.getOpposite() == headState.getValue(FACING);
+        return  isAlignedWithPotentialBase && !headState.canSurvive(accessor, p_60305_) ? Blocks.AIR.defaultBlockState() : super.updateShape(headState, p_60302_, p_60303_, accessor, p_60305_, p_60306_);
     }
 
-    public boolean canSurvive(BlockState p_60288_, LevelReader p_60289_, BlockPos p_60290_) {
-        BlockState blockstate = p_60289_.getBlockState(p_60290_.relative(p_60288_.getValue(FACING).getOpposite()));
-        return this.isFittingBase(p_60288_, blockstate) || blockstate.is(Blocks.MOVING_PISTON) && blockstate.getValue(FACING) == p_60288_.getValue(FACING);
+    //The head-breaking bug is right here
+    public boolean canSurvive(BlockState headState, LevelReader levelReader, BlockPos pos) {
+        BlockState baseState = levelReader.getBlockState(pos.relative(headState.getValue(FACING).getOpposite()));
+        boolean isFittingBase = this.isFittingBase(headState, baseState);
+        boolean isMovingPiston = baseState.is(Blocks.MOVING_PISTON);
+        boolean isAlignedWithBase = baseState.getValue(FACING) == headState.getValue(FACING);
+        return  isFittingBase || isMovingPiston && isAlignedWithBase;
     }
 
     public void neighborChanged(BlockState p_60275_, Level p_60276_, BlockPos p_60277_, Block p_60278_, BlockPos p_60279_, boolean p_60280_) {
