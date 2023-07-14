@@ -81,10 +81,10 @@ public class PneumaticPumpHead extends DirectionalBlock {
     }
 
     private boolean isFittingBase(BlockState headState, BlockState baseState) {
-        boolean isTypeMatch = baseState.is(PNEUMATIC_PUMP_BASE.get());
-        boolean isExtended = baseState.getValue(PneumaticPumpBase.EXTENDED);
-        boolean isAligned = baseState.getValue(FACING) == headState.getValue(FACING);
-        return isTypeMatch && isExtended && isAligned;
+        //Checks if type of block under matches, then if the base is extended, and then if it's aligned with the head
+        //IMPORTANT: Checks MUST be performed in such a way to prevent checking for extended value in a block that
+        //doesn't have it (e.g. checking a moving piston during contraction)
+        return baseState.is(PNEUMATIC_PUMP_BASE.get()) && baseState.getValue(PneumaticPumpBase.EXTENDED) && baseState.getValue(FACING) == headState.getValue(FACING);
     }
 
     public void playerWillDestroy(Level p_60265_, BlockPos p_60266_, BlockState p_60267_, Player p_60268_) {
