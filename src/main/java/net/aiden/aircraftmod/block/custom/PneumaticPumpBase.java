@@ -245,18 +245,9 @@ public class PneumaticPumpBase extends DirectionalBlock {
             return false;
         } else {
             Map<BlockPos, BlockState> map = Maps.newHashMap();
-            List<BlockPos> list = pneumaticPumpStructureResolver.getToPush();
             List<BlockState> list1 = Lists.newArrayList();
 
-            for(int i = 0; i < list.size(); ++i) {
-                BlockPos blockpos1 = list.get(i);
-                BlockState blockstate = level.getBlockState(blockpos1);
-                list1.add(blockstate);
-                map.put(blockpos1, blockstate);
-            }
-
             List<BlockPos> list2 = pneumaticPumpStructureResolver.getToDestroy();
-            BlockState[] ablockstate = new BlockState[list.size() + list2.size()];
             Direction direction = isBasePowered ? pumpDirection : pumpDirection.getOpposite();
             int j = 0;
 
@@ -270,19 +261,6 @@ public class PneumaticPumpBase extends DirectionalBlock {
                 if (!blockstate1.is(BlockTags.FIRE)) {
                     level.addDestroyBlockEffect(blockpos2, blockstate1);
                 }
-
-                ablockstate[j++] = blockstate1;
-            }
-
-            for(int l = list.size() - 1; l >= 0; --l) {
-                BlockPos blockpos3 = list.get(l);
-                BlockState blockstate5 = level.getBlockState(blockpos3);
-                blockpos3 = blockpos3.relative(direction);
-                map.remove(blockpos3);
-                BlockState blockstate8 = Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, pumpDirection);
-                level.setBlock(blockpos3, blockstate8, 68);
-                level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(blockpos3, blockstate8, list1.get(l), pumpDirection, isBasePowered, false));
-                ablockstate[j++] = blockstate5;
             }
 
             if (isBasePowered) {
@@ -306,19 +284,6 @@ public class PneumaticPumpBase extends DirectionalBlock {
                 blockstate2.updateIndirectNeighbourShapes(level, blockpos5, 2);
                 blockstate3.updateNeighbourShapes(level, blockpos5, 2);
                 blockstate3.updateIndirectNeighbourShapes(level, blockpos5, 2);
-            }
-
-            j = 0;
-
-            for(int i1 = list2.size() - 1; i1 >= 0; --i1) {
-                BlockState blockstate7 = ablockstate[j++];
-                BlockPos blockpos6 = list2.get(i1);
-                blockstate7.updateIndirectNeighbourShapes(level, blockpos6, 2);
-                level.updateNeighborsAt(blockpos6, blockstate7.getBlock());
-            }
-
-            for(int j1 = list.size() - 1; j1 >= 0; --j1) {
-                level.updateNeighborsAt(list.get(j1), ablockstate[j++].getBlock());
             }
 
             if (isBasePowered) {
