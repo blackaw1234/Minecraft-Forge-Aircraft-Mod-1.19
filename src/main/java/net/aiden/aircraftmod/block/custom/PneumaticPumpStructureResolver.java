@@ -66,22 +66,22 @@ public class PneumaticPumpStructureResolver {
         if (level.isEmptyBlock(movingBlockPos)) {
             return true;
         } else if (!PneumaticPumpBase.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
-            return true; //If the block should break or can't be pushed
+            return true; //if the block should break or can't be pushed
         } else if (movingBlockPos.equals(this.pumpPos)) {
-            return true;
+            return true; //if the pump is already extended?
         } else if (this.toPush.contains(movingBlockPos)) {
-            return true;
+            return true; //if the pump should push the block in front of it
         } else {
             if (this.toPush.size() > 0) {
-                return false;
+                return false; //if there are blocks queued to push
             } else {
-                this.toPush.add(movingBlockPos.relative(this.pushDirection.getOpposite(), 0));
+                this.toPush.add(movingBlockPos);
 
                 int l = 1;
-                int j1 = 1;
+                int j1 = 0;
 
                 while(true) {
-                    BlockPos blockpos1 = movingBlockPos.relative(this.pushDirection, j1);
+                    BlockPos blockpos1 = movingBlockPos.relative(this.pushDirection, j1);//get the block in front of the block to be pushed
                     int j = this.toPush.indexOf(blockpos1);
                     if (j > -1) {
                         this.reorderListAtCollision(l, j);
