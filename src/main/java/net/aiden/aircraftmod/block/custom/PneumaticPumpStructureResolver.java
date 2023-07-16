@@ -11,26 +11,18 @@ import net.minecraft.world.level.material.PushReaction;
 
 public class PneumaticPumpStructureResolver {
     private final Level level;
-    private final boolean extending;
     private final BlockPos startPos;
     private final BlockPos pumpPos;
     private final Direction pushDirection;
     private final List<BlockPos> toDestroy = Lists.newArrayList();
     private final Direction pistonDirection;
 
-    public PneumaticPumpStructureResolver(Level level, BlockPos inputPumpPos, Direction pushDirection, boolean isExtending) {
+    public PneumaticPumpStructureResolver(Level level, BlockPos inputPumpPos, Direction pushDirection) {
         this.level = level;
         this.pistonDirection = pushDirection;
         this.pumpPos = inputPumpPos;
-        this.extending = isExtending;
-        if (isExtending) {
-            this.pushDirection = pushDirection;
-            this.startPos = inputPumpPos.relative(pushDirection);
-        } else {
-            this.pushDirection = pushDirection.getOpposite();
-            this.startPos = inputPumpPos.relative(pushDirection, 2);
-        }
-
+        this.pushDirection = pushDirection;
+        this.startPos = inputPumpPos.relative(pushDirection);
     }
 
     public boolean resolve() {
@@ -39,7 +31,7 @@ public class PneumaticPumpStructureResolver {
 
         BlockState blockstate = this.level.getBlockState(this.startPos); //blockstate represents the block to be pushed
         if (!PneumaticPumpBase.isPushable(blockstate, this.level, this.startPos, this.pushDirection, false, this.pistonDirection)) {
-            if (this.extending && blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
+            if (blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
                 this.toDestroy.add(this.startPos);
                 return true;
             } else {

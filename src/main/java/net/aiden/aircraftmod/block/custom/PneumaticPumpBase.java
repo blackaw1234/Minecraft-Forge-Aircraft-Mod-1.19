@@ -1,6 +1,5 @@
 package net.aiden.aircraftmod.block.custom;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,6 @@ public class PneumaticPumpBase extends DirectionalBlock {
     public static final int TRIGGER_EXTEND = 0;
     public static final int TRIGGER_CONTRACT = 1;
     public static final int TRIGGER_DROP = 2;
-    public static final float PLATFORM_THICKNESS = 4.0F;
     protected static final VoxelShape EAST_AABB = Block.box(0.0D, 0.0D, 0.0D, 12.0D, 16.0D, 16.0D);
     protected static final VoxelShape WEST_AABB = Block.box(4.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
     protected static final VoxelShape SOUTH_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 12.0D);
@@ -100,50 +98,10 @@ public class PneumaticPumpBase extends DirectionalBlock {
 
     private void checkIfExtend(Level level, BlockPos basePos, BlockState baseState) {
         Direction pumpDirection = baseState.getValue(FACING); //set "direction" to the direction the block is facing
-        boolean signal = this.getNeighborSignal(level, basePos, pumpDirection); //set "flag" to true if the piston is powered
-        if (signal && !baseState.getValue(EXTENDED)) {//if the piston is powered, but not extended
-            if ((new PneumaticPumpStructureResolver(level, basePos, pumpDirection, true)).resolve()) {//and if the piston's structure resolves
+        if (!baseState.getValue(EXTENDED)) {//if the piston is powered, but not extended
+            if ((new PneumaticPumpStructureResolver(level, basePos, pumpDirection)).resolve()) {//and if the piston's structure resolves
                 level.blockEvent(basePos, this, 0, pumpDirection.get3DDataValue());//make a block event for this block position, this block,
             }
-        } else if (!signal && baseState.getValue(EXTENDED)) {
-            BlockPos blockpos = basePos.relative(pumpDirection, 2);
-            BlockState blockstate = level.getBlockState(blockpos);
-            int i = 1;
-            if (blockstate.is(Blocks.MOVING_PISTON) && blockstate.getValue(FACING) == pumpDirection) {
-                BlockEntity blockentity = level.getBlockEntity(blockpos);
-                if (blockentity instanceof PistonMovingBlockEntity) {
-                    PistonMovingBlockEntity pistonmovingblockentity = (PistonMovingBlockEntity)blockentity;
-                    if (pistonmovingblockentity.isExtending() && (pistonmovingblockentity.getProgress(0.0F) < 0.5F || level.getGameTime() == pistonmovingblockentity.getLastTicked() || ((ServerLevel)level).isHandlingTick())) {
-                        i = 2;
-                    }
-                }
-            }
-
-            level.blockEvent(basePos, this, i, pumpDirection.get3DDataValue());
-        }
-
-    }
-
-    //This function prob has something to do with redstone signals; I should be able to get rid of it
-    private boolean getNeighborSignal(Level level, BlockPos pumpPos, Direction pumpDirection) {
-        for(Direction direction : Direction.values()) {
-            if (direction != pumpDirection && level.hasSignal(pumpPos.relative(direction), direction)) {
-                return true;
-            }
-        }
-
-        if (level.hasSignal(pumpPos, Direction.DOWN)) {
-            return true;
-        } else {
-            BlockPos blockpos = pumpPos.above();
-
-            for(Direction direction1 : Direction.values()) {
-                if (direction1 != Direction.DOWN && level.hasSignal(blockpos.relative(direction1), direction1)) {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 
@@ -151,26 +109,21 @@ public class PneumaticPumpBase extends DirectionalBlock {
     public boolean triggerEvent(BlockState baseState, Level level, BlockPos basePos, int extensionFlag, int p_60196_) {
         Direction pumpDirection = baseState.getValue(FACING);
         if (!level.isClientSide) {
-            boolean signal = this.getNeighborSignal(level, basePos, pumpDirection);
-            if (signal && (extensionFlag == 1 || extensionFlag == 2)) {
+            if (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP) {
                 level.setBlock(basePos, baseState.setValue(EXTENDED, Boolean.valueOf(true)), 2);
-                return false;
-            }
-
-            if (!signal && extensionFlag == 0) {
                 return false;
             }
         }
 
-        if (extensionFlag == 0) {
+        if (extensionFlag == TRIGGER_EXTEND) {
             //pump is extending
             if (net.minecraftforge.event.ForgeEventFactory.onPistonMovePre(level, basePos, pumpDirection, true)) return false;//trigger no event if pump is already extending
-            if (!this.moveBlocks(level, basePos, pumpDirection, true)) return false;//trigger no event if pump cannot push the blocks in front of it
+            if (!this.moveBlocks(level, basePos, pumpDirection)) return false;//trigger no event if pump cannot push the blocks in front of it
 
             level.setBlock(basePos, baseState.setValue(EXTENDED, Boolean.valueOf(true)), 67);//replace the base with an extended version of itself
             level.playSound(null, basePos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.25F + 0.6F);
             level.gameEvent(null, GameEvent.PISTON_EXTEND, basePos);
-        } else if (extensionFlag == 1 || extensionFlag == 2) {
+        } else if (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP) {
             //pump is contracting
             if (net.minecraftforge.event.ForgeEventFactory.onPistonMovePre(level, basePos, pumpDirection, false)) return false;//trigger no event if piston is already contracting
             BlockEntity headEntity = level.getBlockEntity(basePos.relative(pumpDirection));
@@ -178,10 +131,10 @@ public class PneumaticPumpBase extends DirectionalBlock {
             if (headEntity instanceof PistonMovingBlockEntity) ((PistonMovingBlockEntity)headEntity).finalTick();
 
             BlockState blockstate = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
-            level.setBlock(basePos, blockstate, 20);//why are we making a moving piston block at the base's position?
+            level.setBlock(basePos, blockstate, 20);
             level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(basePos, blockstate, this.defaultBlockState().setValue
                     (FACING, Direction.from3DDataValue(p_60196_ & 7)), pumpDirection, false, true));
-            level.blockUpdated(basePos, blockstate.getBlock());//tell the level that a moving piston got updated at the position of the piston's base -- THIS LINE IS CAUSING THE ERROR
+            level.blockUpdated(basePos, blockstate.getBlock());//tell the level that a moving piston got updated at the position of the piston's base
             blockstate.updateNeighbourShapes(level, basePos, 2);
             level.removeBlock(basePos.relative(pumpDirection), false);//remove the piston head
 
@@ -189,7 +142,7 @@ public class PneumaticPumpBase extends DirectionalBlock {
             level.gameEvent(null, GameEvent.PISTON_CONTRACT, basePos);
         }
 
-        net.minecraftforge.event.ForgeEventFactory.onPistonMovePost(level, basePos, pumpDirection, (extensionFlag == 0));
+        net.minecraftforge.event.ForgeEventFactory.onPistonMovePost(level, basePos, pumpDirection, (extensionFlag == TRIGGER_EXTEND));
         return true;
     }
 
@@ -234,22 +187,16 @@ public class PneumaticPumpBase extends DirectionalBlock {
     }
 
     //main method: annotate and modify
-    private boolean moveBlocks(Level level, BlockPos pos, Direction pumpDirection, boolean isBasePowered) {
-        BlockPos blockpos = pos.relative(pumpDirection); //set 'blockpos' to the position of the head
-        if (!isBasePowered && level.getBlockState(blockpos).is(PNEUMATIC_PUMP_HEAD.get())) {
-            level.setBlock(blockpos, Blocks.AIR.defaultBlockState(), 20);
-        }
+    private boolean moveBlocks(Level level, BlockPos basePos, Direction pumpDirection) {
+        BlockPos headPos = basePos.relative(pumpDirection); //set 'blockpos' to the position of the head
 
-        PneumaticPumpStructureResolver pneumaticPumpStructureResolver = new PneumaticPumpStructureResolver(level, pos, pumpDirection, isBasePowered);
+        PneumaticPumpStructureResolver pneumaticPumpStructureResolver = new PneumaticPumpStructureResolver(level, basePos, pumpDirection);
         if (!pneumaticPumpStructureResolver.resolve()) {
             return false;
         } else {
             Map<BlockPos, BlockState> map = Maps.newHashMap();
-            List<BlockState> list1 = Lists.newArrayList();
 
             List<BlockPos> list2 = pneumaticPumpStructureResolver.getToDestroy();
-            Direction direction = isBasePowered ? pumpDirection : pumpDirection.getOpposite();
-            int j = 0;
 
             for(int k = list2.size() - 1; k >= 0; --k) {
                 BlockPos blockpos2 = list2.get(k);
@@ -263,14 +210,12 @@ public class PneumaticPumpBase extends DirectionalBlock {
                 }
             }
 
-            if (isBasePowered) {
-                PistonType pistontype = PistonType.DEFAULT;
-                BlockState pumpHeadState = PNEUMATIC_PUMP_HEAD.get().defaultBlockState().setValue(PneumaticPumpHead.FACING, pumpDirection).setValue(PneumaticPumpHead.TYPE, pistontype);
-                BlockState blockstate6 = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
-                map.remove(blockpos);
-                level.setBlock(blockpos, blockstate6, 68);
-                level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(blockpos, blockstate6, pumpHeadState, pumpDirection, true, true));
-            }
+            PistonType pistontype = PistonType.DEFAULT;
+            BlockState pumpHeadState = PNEUMATIC_PUMP_HEAD.get().defaultBlockState().setValue(PneumaticPumpHead.FACING, pumpDirection).setValue(PneumaticPumpHead.TYPE, pistontype);
+            BlockState blockstate6 = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
+            map.remove(headPos);
+            level.setBlock(headPos, blockstate6, 68);
+            level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(headPos, blockstate6, pumpHeadState, pumpDirection, true, true));
 
             BlockState blockstate3 = Blocks.AIR.defaultBlockState();
 
@@ -286,9 +231,7 @@ public class PneumaticPumpBase extends DirectionalBlock {
                 blockstate3.updateIndirectNeighbourShapes(level, blockpos5, 2);
             }
 
-            if (isBasePowered) {
-                level.updateNeighborsAt(blockpos, PNEUMATIC_PUMP_HEAD.get());
-            }
+            level.updateNeighborsAt(headPos, PNEUMATIC_PUMP_HEAD.get());
 
             return true;
         }
