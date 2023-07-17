@@ -98,20 +98,71 @@ public class PneumaticPumpBase extends DirectionalBlock {
 
     private void checkIfExtend(Level level, BlockPos basePos, BlockState baseState) {
         Direction pumpDirection = baseState.getValue(FACING); //set "direction" to the direction the block is facing
-        if (!baseState.getValue(EXTENDED)) {//if the pump is not extended
+        boolean isOpposed = this.isOpposed(level, basePos, baseState);
+        if (!isOpposed && !baseState.getValue(EXTENDED)) {//if the pump is not extended
             if ((new PneumaticPumpStructureResolver(level, basePos, pumpDirection)).resolve()) {//and if the pump's structure resolves
                 level.blockEvent(basePos, this, 0, pumpDirection.get3DDataValue());//make a block event for this block position, this block,
             }
+        } else if(isOpposed && baseState.getValue(EXTENDED)){
+            BlockPos blockpos = basePos.relative(pumpDirection, 2);//set blockpos to the block in front of the head
+            BlockState blockstate = level.getBlockState(blockpos);//blockstate is the state of the block in front of the head
+            int i = 1;
+            if (blockstate.is(Blocks.MOVING_PISTON) && blockstate.getValue(FACING) == pumpDirection) {
+                BlockEntity blockentity = level.getBlockEntity(blockpos);
+                if (blockentity instanceof PistonMovingBlockEntity) {
+                    PistonMovingBlockEntity pistonmovingblockentity = (PistonMovingBlockEntity)blockentity;
+                    if (pistonmovingblockentity.isExtending() && (pistonmovingblockentity.getProgress(0.0F) < 0.5F || level.getGameTime() == pistonmovingblockentity.getLastTicked() || ((ServerLevel)level).isHandlingTick())) {
+                        i = 2;
+                    }
+                }
+            }
+
+            level.blockEvent(basePos, this, i, pumpDirection.get3DDataValue());
         }
+    }
+
+    private boolean getNeighborSignal(Level p_60178_, BlockPos p_60179_, Direction p_60180_) {
+        for(Direction direction : Direction.values()) {
+            if (direction != p_60180_ && p_60178_.hasSignal(p_60179_.relative(direction), direction)) {
+                return true;
+            }
+        }
+
+        if (p_60178_.hasSignal(p_60179_, Direction.DOWN)) {
+            return true;
+        } else {
+            BlockPos blockpos = p_60179_.above();
+
+            for(Direction direction1 : Direction.values()) {
+                if (direction1 != Direction.DOWN && p_60178_.hasSignal(blockpos.relative(direction1), direction1)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private boolean isOpposed(Level level, BlockPos basePos, BlockState baseState)
+    {
+        Direction pumpDirection = baseState.getValue(FACING);
+        BlockPos potentialPistonPos = basePos.relative(pumpDirection,2);
+        BlockState potentialPistonState = level.getBlockState(potentialPistonPos);
+        return (potentialPistonState.is(Blocks.PISTON) || potentialPistonState.is(Blocks.STICKY_PISTON)) && this.getNeighborSignal(level,potentialPistonPos,pumpDirection) && potentialPistonState.getValue(FACING) == pumpDirection.getOpposite();
     }
 
     //This method tells the level when the pump is supposed to do something
     public boolean triggerEvent(BlockState baseState, Level level, BlockPos basePos, int extensionFlag, int p_60196_) {
         Direction pumpDirection = baseState.getValue(FACING);
         if (!level.isClientSide) {
-            if (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP) {
+            boolean isOpposed = this.isOpposed(level,basePos,baseState);
+            if (!isOpposed && (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP)) {
                 //flag pump for extension if it hasn't been already
                 level.setBlock(basePos, baseState.setValue(EXTENDED, Boolean.valueOf(true)), 2);
+                return false;
+            }
+
+            if(isOpposed && extensionFlag == TRIGGER_EXTEND){
                 return false;
             }
         }

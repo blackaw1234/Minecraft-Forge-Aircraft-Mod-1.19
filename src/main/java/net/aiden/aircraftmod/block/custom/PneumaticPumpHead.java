@@ -114,7 +114,6 @@ public class PneumaticPumpHead extends DirectionalBlock {
         return  isAlignedWithPotentialBase && !headState.canSurvive(accessor, p_60305_) ? Blocks.AIR.defaultBlockState() : super.updateShape(headState, p_60302_, p_60303_, accessor, p_60305_, p_60306_);
     }
 
-    //The head-breaking bug is right here
     public boolean canSurvive(BlockState headState, LevelReader levelReader, BlockPos headPos) {
         BlockState baseState = levelReader.getBlockState(headPos.relative(headState.getValue(FACING).getOpposite()));
         boolean isFittingBase = this.isFittingBase(headState, baseState);
