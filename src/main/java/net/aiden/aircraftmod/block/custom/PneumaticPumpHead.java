@@ -115,23 +115,21 @@ public class PneumaticPumpHead extends DirectionalBlock {
     }
 
     //The head-breaking bug is right here
-    public boolean canSurvive(BlockState headState, LevelReader levelReader, BlockPos pos) {
-        BlockState baseState = levelReader.getBlockState(pos.relative(headState.getValue(FACING).getOpposite()));
+    public boolean canSurvive(BlockState headState, LevelReader levelReader, BlockPos headPos) {
+        BlockState baseState = levelReader.getBlockState(headPos.relative(headState.getValue(FACING).getOpposite()));
         boolean isFittingBase = this.isFittingBase(headState, baseState);
-        boolean isMovingPiston = baseState.is(Blocks.MOVING_PISTON);
-        boolean isAlignedWithBase = baseState.getValue(FACING) == headState.getValue(FACING);
-        return  isFittingBase || isMovingPiston && isAlignedWithBase;
+        return  isFittingBase || baseState.is(Blocks.MOVING_PISTON) && baseState.getValue(FACING) == headState.getValue(FACING);
     }
 
-    public void neighborChanged(BlockState p_60275_, Level p_60276_, BlockPos p_60277_, Block p_60278_, BlockPos p_60279_, boolean p_60280_) {
-        if (p_60275_.canSurvive(p_60276_, p_60277_)) {
-            p_60276_.neighborChanged(p_60277_.relative(p_60275_.getValue(FACING).getOpposite()), p_60278_, p_60279_);
+    public void neighborChanged(BlockState headState, Level level, BlockPos headPos, Block headType, BlockPos p_60279_, boolean p_60280_) {
+        if (headState.canSurvive(level, headPos)) {
+            level.neighborChanged(headPos.relative(headState.getValue(FACING).getOpposite()), headType, p_60279_);
         }
 
     }
 
     public ItemStack getCloneItemStack(BlockGetter p_60261_, BlockPos p_60262_, BlockState p_60263_) {
-        return new ItemStack(p_60263_.getValue(TYPE) == PistonType.STICKY ? Blocks.STICKY_PISTON : Blocks.PISTON);
+        return new ItemStack(PNEUMATIC_PUMP_BASE.get());
     }
 
     public BlockState rotate(BlockState p_60295_, Rotation p_60296_) {

@@ -98,8 +98,8 @@ public class PneumaticPumpBase extends DirectionalBlock {
 
     private void checkIfExtend(Level level, BlockPos basePos, BlockState baseState) {
         Direction pumpDirection = baseState.getValue(FACING); //set "direction" to the direction the block is facing
-        if (!baseState.getValue(EXTENDED)) {//if the piston is powered, but not extended
-            if ((new PneumaticPumpStructureResolver(level, basePos, pumpDirection)).resolve()) {//and if the piston's structure resolves
+        if (!baseState.getValue(EXTENDED)) {//if the pump is not extended
+            if ((new PneumaticPumpStructureResolver(level, basePos, pumpDirection)).resolve()) {//and if the pump's structure resolves
                 level.blockEvent(basePos, this, 0, pumpDirection.get3DDataValue());//make a block event for this block position, this block,
             }
         }
@@ -110,6 +110,7 @@ public class PneumaticPumpBase extends DirectionalBlock {
         Direction pumpDirection = baseState.getValue(FACING);
         if (!level.isClientSide) {
             if (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP) {
+                //flag pump for extension if it hasn't been already
                 level.setBlock(basePos, baseState.setValue(EXTENDED, Boolean.valueOf(true)), 2);
                 return false;
             }
