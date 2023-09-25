@@ -2,6 +2,7 @@ package net.aiden.aircraftmod;
 
 import com.mojang.logging.LogUtils;
 import net.aiden.aircraftmod.block.ModBlocks;
+import net.aiden.aircraftmod.block.entity.ModBlockEntities;
 import net.aiden.aircraftmod.item.ModItems;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -25,6 +26,8 @@ public class AircraftMod
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+
+        ModBlockEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 

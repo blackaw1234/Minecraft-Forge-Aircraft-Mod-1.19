@@ -1,6 +1,9 @@
 package net.aiden.aircraftmod.block.custom;
 
 import java.util.Arrays;
+
+import net.aiden.aircraftmod.block.entity.ModBlockEntities;
+import net.aiden.aircraftmod.block.entity.PneumaticPumpBaseBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -9,26 +12,24 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DirectionalBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.PistonType;
+import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 import static net.aiden.aircraftmod.block.ModBlocks.PNEUMATIC_PUMP_BASE;
 
 public class PneumaticPumpHead extends DirectionalBlock {
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final EnumProperty<PistonType> TYPE = BlockStateProperties.PISTON_TYPE;
     public static final BooleanProperty SHORT = BlockStateProperties.SHORT;
     protected static final VoxelShape EAST_AABB = Block.box(12.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
@@ -105,7 +106,6 @@ public class PneumaticPumpHead extends DirectionalBlock {
             if (this.isFittingBase(headState, p_60283_.getBlockState(blockpos))) {
                 p_60283_.destroyBlock(blockpos, true);
             }
-
         }
     }
 
