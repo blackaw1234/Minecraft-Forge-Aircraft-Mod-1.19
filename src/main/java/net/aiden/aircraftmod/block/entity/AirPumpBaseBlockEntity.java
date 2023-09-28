@@ -1,28 +1,27 @@
 package net.aiden.aircraftmod.block.entity;
 
-import net.aiden.aircraftmod.block.custom.PneumaticPumpBase;
+import net.aiden.aircraftmod.block.custom.AirPumpBaseBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import static net.aiden.aircraftmod.block.custom.PneumaticPumpBase.*;
+import static net.aiden.aircraftmod.block.custom.AirPumpBaseBlock.*;
+import static net.minecraft.world.level.block.piston.PistonBaseBlock.TRIGGER_CONTRACT;
 
-//TODO: Figure out what the final int parameter of PneumaticPumpBase.triggerEvent() does.
+public class AirPumpBaseBlockEntity extends BlockEntity {
 
-public class PneumaticPumpBaseBlockEntity extends BlockEntity {
-
-    public PneumaticPumpBaseBlockEntity(BlockPos p_155229_, BlockState p_155230_) {
-        super(ModBlockEntities.PNEUMATIC_PUMP_BASE.get(), p_155229_, p_155230_);
+    public AirPumpBaseBlockEntity(BlockPos p_155229_, BlockState p_155230_) {
+        super(ModBlockEntities.AIR_PUMP_BASE.get(), p_155229_, p_155230_);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, PneumaticPumpBaseBlockEntity pEntity) {
+    public static void tick(Level level, BlockPos pos, BlockState state, AirPumpBaseBlockEntity pEntity) {
         if(level.isClientSide()) {
             return;
         }
 
         int direction = 7;
-        PneumaticPumpBase base = (PneumaticPumpBase) level.getBlockState(pos).getBlock();
+        AirPumpBaseBlock base = (AirPumpBaseBlock) level.getBlockState(pos).getBlock();
 
         switch(state.getValue(FACING)) {
             case DOWN:
@@ -45,7 +44,7 @@ public class PneumaticPumpBaseBlockEntity extends BlockEntity {
                 break;
         }
 
-        if(base.isOpposed(level, pos, state) && state.getValue(EXTENDED) == Boolean.valueOf(true)) {
+        if(base.isOpposed(level, pos) && state.getValue(EXTENDED) == Boolean.valueOf(true)) {
             base.triggerEvent(state, level, pos, TRIGGER_CONTRACT, direction);
         }
     }

@@ -2,8 +2,6 @@ package net.aiden.aircraftmod.block.custom;
 
 import java.util.Arrays;
 
-import net.aiden.aircraftmod.block.entity.ModBlockEntities;
-import net.aiden.aircraftmod.block.entity.PneumaticPumpBaseBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -13,9 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -24,11 +19,10 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
-import static net.aiden.aircraftmod.block.ModBlocks.PNEUMATIC_PUMP_BASE;
+import static net.aiden.aircraftmod.block.ModBlocks.AIR_PUMP_BASE;
 
-public class PneumaticPumpHead extends DirectionalBlock {
+public class AirPumpHeadBlock extends DirectionalBlock {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final EnumProperty<PistonType> TYPE = BlockStateProperties.PISTON_TYPE;
     public static final BooleanProperty SHORT = BlockStateProperties.SHORT;
@@ -68,7 +62,7 @@ public class PneumaticPumpHead extends DirectionalBlock {
         };
     }
 
-    public PneumaticPumpHead(BlockBehaviour.Properties p_60259_) {
+    public AirPumpHeadBlock(BlockBehaviour.Properties p_60259_) {
         super(p_60259_);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TYPE, PistonType.DEFAULT).setValue(SHORT, Boolean.FALSE));
     }
@@ -85,7 +79,7 @@ public class PneumaticPumpHead extends DirectionalBlock {
         //Checks if type of block under matches, then if the base is extended, and then if it's aligned with the head
         //IMPORTANT: Checks MUST be performed in such a way to prevent checking for extended value in a block that
         //doesn't have it (e.g. checking a moving piston during contraction)
-        return baseState.is(PNEUMATIC_PUMP_BASE.get()) && baseState.getValue(PneumaticPumpBase.EXTENDED) && baseState.getValue(FACING) == headState.getValue(FACING);
+        return baseState.is(AIR_PUMP_BASE.get()) && baseState.getValue(AirPumpBaseBlock.EXTENDED) && baseState.getValue(FACING) == headState.getValue(FACING);
     }
 
     public void playerWillDestroy(Level p_60265_, BlockPos p_60266_, BlockState p_60267_, Player p_60268_) {
@@ -128,7 +122,7 @@ public class PneumaticPumpHead extends DirectionalBlock {
     }
 
     public ItemStack getCloneItemStack(BlockGetter p_60261_, BlockPos p_60262_, BlockState p_60263_) {
-        return new ItemStack(PNEUMATIC_PUMP_BASE.get());
+        return new ItemStack(AIR_PUMP_BASE.get());
     }
 
     public BlockState rotate(BlockState p_60295_, Rotation p_60296_) {

@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 
-public class PneumaticPumpStructureResolver {
+public class AirPumpStructureResolver {
     private final Level level;
     private final BlockPos startPos;
     private final BlockPos pumpPos;
@@ -17,7 +17,7 @@ public class PneumaticPumpStructureResolver {
     private final List<BlockPos> toDestroy = Lists.newArrayList();
     private final Direction pistonDirection;
 
-    public PneumaticPumpStructureResolver(Level level, BlockPos inputPumpPos, Direction pushDirection) {
+    public AirPumpStructureResolver(Level level, BlockPos inputPumpPos, Direction pushDirection) {
         this.level = level;
         this.pistonDirection = pushDirection;
         this.pumpPos = inputPumpPos;
@@ -30,7 +30,7 @@ public class PneumaticPumpStructureResolver {
         this.toDestroy.clear();
 
         BlockState blockstate = this.level.getBlockState(this.startPos); //blockstate represents the block to be pushed
-        if (!PneumaticPumpBase.isPushable(blockstate, this.level, this.startPos, this.pushDirection, false, this.pistonDirection)) {
+        if (!AirPumpBaseBlock.isPushable(blockstate, this.level, this.startPos, this.pushDirection, false, this.pistonDirection)) {
             if (blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
                 this.toDestroy.add(this.startPos);
                 return true;
@@ -45,7 +45,7 @@ public class PneumaticPumpStructureResolver {
         BlockState blockstate = this.level.getBlockState(movingBlockPos);
         if (level.isEmptyBlock(movingBlockPos)) {
             return true; //if the block is air
-        } else if (!PneumaticPumpBase.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
+        } else if (!AirPumpBaseBlock.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
             return true; //if the block should break?
         } else if (movingBlockPos.equals(this.pumpPos)) {
             return true; //if the pump is already extended?
