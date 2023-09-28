@@ -9,7 +9,6 @@ import net.aiden.aircraftmod.block.entity.ModBlockEntities;
 import net.aiden.aircraftmod.block.entity.AirPumpBaseBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
-import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -91,7 +89,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      */
     public AirPumpBaseBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(EXTENDED, Boolean.valueOf(false)));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(EXTENDED, false));
     }
 
     /**
@@ -104,7 +102,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      * @return a voxel that defines the collision box for the pump base
      */
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext collisionContext) {
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter getter, @NotNull BlockPos pos, @NotNull CollisionContext collisionContext) {
         if (state.getValue(EXTENDED)) {
             return switch (state.getValue(FACING)) {
                 case DOWN -> DOWN_AABB;
@@ -129,7 +127,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      * @param itemStack stack from which the pump base was placed?
      */
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack itemStack) {
+    public void setPlacedBy(Level level, @NotNull BlockPos pos, @NotNull BlockState state, LivingEntity entity, @NotNull ItemStack itemStack) {
         if (!level.isClientSide) this.checkIfExtend(level, pos, state);
     }
 
@@ -144,7 +142,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      * @param b           unused parameter from overridden method
      */
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos basePos, Block block, BlockPos neighborPos, boolean b) {
+    public void neighborChanged(@NotNull BlockState state, Level level, @NotNull BlockPos basePos, @NotNull Block block, @NotNull BlockPos neighborPos, boolean b) {
         if (!level.isClientSide) {
             this.checkIfExtend(level, basePos, state);
         }
@@ -157,35 +155,24 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      * @param basePos   pump base's location
      * @param baseState pump base's BlockState
      */
-    private void checkIfExtend(Level level, BlockPos basePos, BlockState baseState) {
+    public void checkIfExtend(Level level, BlockPos basePos, BlockState baseState) {
         Direction pumpDirection = baseState.getValue(FACING); //set "direction" to the direction the block is facing
         boolean isOpposed = this.isOpposed(level, basePos);
+
         if (!isOpposed && !baseState.getValue(EXTENDED)) {//if the pump is not extended
             if ((new AirPumpStructureResolver(level, basePos, pumpDirection)).resolve()) {//and if the pump's structure resolves
-                level.blockEvent(basePos, this, 0, pumpDirection.get3DDataValue());//make a block event for this block position, this block,
+                level.blockEvent(basePos, this, TRIGGER_EXTEND, pumpDirection.get3DDataValue());//make a block event for this block position, this block,
             }
         } else if (isOpposed && baseState.getValue(EXTENDED)) {
-            BlockPos blockpos = basePos.relative(pumpDirection, 2);//set blockpos to the block in front of the head
-            BlockState blockstate = level.getBlockState(blockpos);//blockstate is the state of the block in front of the head
-            int i = 1;
-            if (blockstate.is(Blocks.MOVING_PISTON) && blockstate.getValue(FACING) == pumpDirection) {
-                BlockEntity blockentity = level.getBlockEntity(blockpos);
-                if (blockentity instanceof PistonMovingBlockEntity pistonmovingblockentity) {
-                    if (pistonmovingblockentity.isExtending() && (pistonmovingblockentity.getProgress(0.0F) < 0.5F || level.getGameTime() == pistonmovingblockentity.getLastTicked() || ((ServerLevel) level).isHandlingTick())) {
-                        i = 2;
-                    }
-                }
-            }
-
-            level.blockEvent(basePos, this, i, pumpDirection.get3DDataValue());
+            level.blockEvent(basePos, this, TRIGGER_CONTRACT, pumpDirection.get3DDataValue());
         }
     }
 
     /**
      * Determines whether a piston is powered.
      *
-     * @param level           spatial and network context
-     * @param pistonPos       location of piston tested for signal
+     * @param level     spatial and network context
+     * @param pistonPos location of piston tested for signal
      * @return true if piston is powered, false if it is not powered
      */
     private boolean isPistonPowered(Level level, BlockPos pistonPos) {
@@ -216,8 +203,8 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
     /**
      * Determines whether the pump's extension is opposed by a powered piston.
      *
-     * @param level     the "level" (dimension/world?) in which this check is occurring
-     * @param basePos   the position of the base of the pneumatic pump for which we are checking for opposition
+     * @param level   the "level" (dimension/world?) in which this check is occurring
+     * @param basePos the position of the base of the pneumatic pump for which we are checking for opposition
      * @return true if the pump's extension is opposed by a powered piston head, false otherwise
      */
     public boolean isOpposed(Level level, BlockPos basePos) {
@@ -243,7 +230,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         Direction pumpDirection = baseState.getValue(FACING);
         if (!level.isClientSide) {
             boolean isOpposed = isOpposed(level, basePos);
-            if (!isOpposed && (extensionFlag == TRIGGER_EXTEND || extensionFlag == TRIGGER_DROP)) {
+            if (!isOpposed && (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP)) {
                 //flag pump for extension if it hasn't been already
                 level.setBlock(basePos, baseState.setValue(EXTENDED, true), 2);
                 return false;
@@ -265,7 +252,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
                 return false;
             }
 
-            level.setBlock(basePos, baseState.setValue(EXTENDED, Boolean.valueOf(true)), 67);//replace the base with an extended version of itself
+            level.setBlock(basePos, baseState.setValue(EXTENDED, true), 67);//replace the base with an extended version of itself
             level.playSound(null, basePos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.25F + 0.6F);
             level.gameEvent(null, GameEvent.PISTON_EXTEND, basePos);
         } else if (extensionFlag == TRIGGER_CONTRACT || extensionFlag == TRIGGER_DROP) {
@@ -292,48 +279,48 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         return true;
     }
 
-    public static boolean isPushable(BlockState pushCandidateState, Level level, BlockPos pos, Direction direction1, boolean p_60209_, Direction direction2) {
+    public static boolean isNotPushable(BlockState pushCandidateState, Level level, BlockPos pos, Direction pushDirection, boolean p_60209_, Direction direction2) {
         if (pos.getY() >= level.getMinBuildHeight() && pos.getY() <= level.getMaxBuildHeight() - 1 && level.getWorldBorder().isWithinBounds(pos)) {
             if (pushCandidateState.isAir()) {
-                return true;
+                return false;
             } else if (!pushCandidateState.is(Blocks.OBSIDIAN) && !pushCandidateState.is(Blocks.CRYING_OBSIDIAN) && !pushCandidateState.is(Blocks.RESPAWN_ANCHOR) && !pushCandidateState.is(Blocks.REINFORCED_DEEPSLATE)) {
-                if (direction1 == Direction.DOWN && pos.getY() == level.getMinBuildHeight()) {
-                    return false;
-                } else if (direction1 == Direction.UP && pos.getY() == level.getMaxBuildHeight() - 1) {
-                    return false;
+                if (pushDirection == Direction.DOWN && pos.getY() == level.getMinBuildHeight()) {
+                    return true;
+                } else if (pushDirection == Direction.UP && pos.getY() == level.getMaxBuildHeight() - 1) {
+                    return true;
                 } else {
                     if (!pushCandidateState.is(Blocks.PISTON) && !pushCandidateState.is(Blocks.STICKY_PISTON)) {
                         if (pushCandidateState.getDestroySpeed(level, pos) == -1.0F) {
-                            return false;
+                            return true;
                         }
 
                         switch (pushCandidateState.getPistonPushReaction()) {
                             case BLOCK -> {
-                                return false;
+                                return true;
                             }
                             case DESTROY -> {
-                                return p_60209_;
+                                return !p_60209_;
                             }
                             case PUSH_ONLY -> {
-                                return direction1 == direction2;
+                                return pushDirection != direction2;
                             }
                         }
                     } else if (pushCandidateState.getValue(EXTENDED)) {
-                        return false;
+                        return true;
                     }
 
-                    return !pushCandidateState.hasBlockEntity();
+                    return pushCandidateState.hasBlockEntity();
                 }
             } else {
-                return false;
+                return true;
             }
         } else {
-            return false;
+            return true;
         }
     }
 
     private boolean moveBlocks(Level level, BlockPos basePos, Direction pumpDirection) {
-        BlockPos headPos = basePos.relative(pumpDirection); //set 'blockpos' to the position of the head
+        BlockPos headPos = basePos.relative(pumpDirection);
 
         AirPumpStructureResolver airPumpStructureResolver = new AirPumpStructureResolver(level, basePos, pumpDirection);
         if (!airPumpStructureResolver.resolve()) {
@@ -382,7 +369,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         }
     }
 
-    public BlockState rotate(BlockState p_60215_, Rotation p_60216_) {
+    public @NotNull BlockState rotate(BlockState p_60215_, Rotation p_60216_) {
         return p_60215_.setValue(FACING, p_60216_.rotate(p_60215_.getValue(FACING)));
     }
 
@@ -390,7 +377,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         return state.getValue(EXTENDED) ? state : super.rotate(state, world, pos, direction);
     }
 
-    public BlockState mirror(BlockState p_60212_, Mirror p_60213_) {
+    public @NotNull BlockState mirror(BlockState p_60212_, Mirror p_60213_) {
         return p_60212_.rotate(p_60213_.getRotation(p_60212_.getValue(FACING)));
     }
 
@@ -402,29 +389,30 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         return p_60231_.getValue(EXTENDED);
     }
 
-    public boolean isPathfindable(BlockState p_60187_, BlockGetter p_60188_, BlockPos p_60189_, PathComputationType p_60190_) {
+    @Override
+    public boolean isPathfindable(@NotNull BlockState p_60187_, @NotNull BlockGetter p_60188_, @NotNull BlockPos p_60189_, @NotNull PathComputationType p_60190_) {
         return false;
     }
 
-    public PushReaction getPistonPushReaction(BlockState baseState) {
+    public @NotNull PushReaction getPistonPushReaction(BlockState baseState) {
         if (baseState.getValue(EXTENDED)) return PushReaction.BLOCK;
         else return PushReaction.NORMAL;
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) {
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
         return RenderShape.MODEL;
     }
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new AirPumpBaseBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
         return createTickerHelper(type, ModBlockEntities.AIR_PUMP_BASE.get(), AirPumpBaseBlockEntity::tick);
     }
 }

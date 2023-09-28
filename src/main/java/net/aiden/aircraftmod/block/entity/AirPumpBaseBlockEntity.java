@@ -9,43 +9,47 @@ import net.minecraft.world.level.block.state.BlockState;
 import static net.aiden.aircraftmod.block.custom.AirPumpBaseBlock.*;
 import static net.minecraft.world.level.block.piston.PistonBaseBlock.TRIGGER_CONTRACT;
 
+/**
+ * Block entity associated with air pump base. Allows the level
+ * to check for an opponent piston every tick
+ *
+ * @author Aiden Black
+ */
 public class AirPumpBaseBlockEntity extends BlockEntity {
-
-    public AirPumpBaseBlockEntity(BlockPos p_155229_, BlockState p_155230_) {
-        super(ModBlockEntities.AIR_PUMP_BASE.get(), p_155229_, p_155230_);
+    /**
+     * Constructs an AirPumpBaseBlockEntity object.
+     * @param basePos pump base's location
+     * @param baseState pump base's BlockState
+     */
+    public AirPumpBaseBlockEntity(BlockPos basePos, BlockState baseState) {
+        super(ModBlockEntities.AIR_PUMP_BASE.get(), basePos, baseState);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, AirPumpBaseBlockEntity pEntity) {
+    /**
+     * Checks if the pump should be extended every tick.
+     *
+     * @param level spatial and network context
+     * @param basePos pump base's location
+     * @param baseState pump base's BlockState
+     * @param pEntity unused parameter
+     */
+    public static void tick(Level level, BlockPos basePos, BlockState baseState, AirPumpBaseBlockEntity pEntity) {
         if(level.isClientSide()) {
             return;
         }
 
-        int direction = 7;
-        AirPumpBaseBlock base = (AirPumpBaseBlock) level.getBlockState(pos).getBlock();
+        int direction;
+        AirPumpBaseBlock base = (AirPumpBaseBlock) level.getBlockState(basePos).getBlock();
 
-        switch(state.getValue(FACING)) {
-            case DOWN:
-                direction = 0;
-                break;
-            case UP:
-                direction = 1;
-                break;
-            case NORTH:
-                direction = 2;
-                break;
-            case SOUTH:
-                direction = 3;
-                break;
-            case WEST:
-                direction = 4;
-                break;
-            case EAST:
-                direction = 5;
-                break;
-        }
+        direction = switch (baseState.getValue(FACING)) {
+            case DOWN -> 0;
+            case UP -> 1;
+            case NORTH -> 2;
+            case SOUTH -> 3;
+            case WEST -> 4;
+            case EAST -> 5;
+        };
 
-        if(base.isOpposed(level, pos) && state.getValue(EXTENDED) == Boolean.valueOf(true)) {
-            base.triggerEvent(state, level, pos, TRIGGER_CONTRACT, direction);
-        }
+        base.checkIfExtend(level, basePos, baseState);
     }
 }

@@ -10,34 +10,35 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 
 public class AirPumpStructureResolver {
+    /** spatial and network context of the air pump */
     private final Level level;
-    private final BlockPos startPos;
-    private final BlockPos pumpPos;
+    private final BlockPos headPos;
+    private final BlockPos basePos;
     private final Direction pushDirection;
     private final List<BlockPos> toDestroy = Lists.newArrayList();
     private final Direction pistonDirection;
 
-    public AirPumpStructureResolver(Level level, BlockPos inputPumpPos, Direction pushDirection) {
+    public AirPumpStructureResolver(Level level, BlockPos basePos, Direction pushDirection) {
         this.level = level;
         this.pistonDirection = pushDirection;
-        this.pumpPos = inputPumpPos;
+        this.basePos = basePos;
         this.pushDirection = pushDirection;
-        this.startPos = inputPumpPos.relative(pushDirection);
+        this.headPos = basePos.relative(pushDirection);
     }
 
     public boolean resolve() {
         //clear the destroy array
         this.toDestroy.clear();
 
-        BlockState blockstate = this.level.getBlockState(this.startPos); //blockstate represents the block to be pushed
-        if (!AirPumpBaseBlock.isPushable(blockstate, this.level, this.startPos, this.pushDirection, false, this.pistonDirection)) {
-            if (blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
-                this.toDestroy.add(this.startPos);
+        BlockState headState = this.level.getBlockState(this.headPos); //blockstate represents the block to be pushed
+        if (AirPumpBaseBlock.isNotPushable(headState, this.level, this.headPos, this.pushDirection, false, this.pistonDirection)) {
+            if (headState.getPistonPushReaction() == PushReaction.DESTROY) {
+                this.toDestroy.add(this.headPos);
                 return true;
             } else {
                 return false;
             }
-        } else if (!this.addBlockLine(this.startPos, this.pushDirection)) return false;
+        } else if (!this.addBlockLine(this.headPos, this.pushDirection)) return false;
         else return true;
     }
 
@@ -45,12 +46,12 @@ public class AirPumpStructureResolver {
         BlockState blockstate = this.level.getBlockState(movingBlockPos);
         if (level.isEmptyBlock(movingBlockPos)) {
             return true; //if the block is air
-        } else if (!AirPumpBaseBlock.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
+        } else if (AirPumpBaseBlock.isNotPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
             return true; //if the block should break?
-        } else if (movingBlockPos.equals(this.pumpPos)) {
+        } else if (movingBlockPos.equals(this.basePos)) {
             return true; //if the pump is already extended?
         } else {
-            if (!PistonBaseBlock.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, true, this.pushDirection) || movingBlockPos.equals(this.pumpPos)) {
+            if (!PistonBaseBlock.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, true, this.pushDirection) || movingBlockPos.equals(this.basePos)) {
                 return false;
             }
 
