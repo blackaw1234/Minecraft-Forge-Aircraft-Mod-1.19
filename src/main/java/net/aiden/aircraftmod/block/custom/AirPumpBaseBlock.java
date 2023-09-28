@@ -286,10 +286,10 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
      * @param level              spatial and network context
      * @param pushCandidatePos   push candidate's location
      * @param pushDirection      direction in which the pump will attempt to push
-     * @param isPushDestructible decides whether blocks that are destroyed by motion should be considered pushable
+     * @param isCanDestroy       decides whether blocks that are destroyed by motion should be considered pushable
      * @return true if block in front of pump should not be pushed, false if it should be pushed
      */
-    public static boolean isNotPushable(BlockState pushCandidateState, Level level, BlockPos pushCandidatePos, Direction pushDirection, boolean isPushDestructible) {
+    public static boolean isNotPushable(BlockState pushCandidateState, Level level, BlockPos pushCandidatePos, Direction pushDirection, boolean isCanDestroy) {
         if (pushCandidatePos.getY() >= level.getMinBuildHeight() && pushCandidatePos.getY() < level.getMaxBuildHeight() && level.getWorldBorder().isWithinBounds(pushCandidatePos)) {
             if (pushCandidateState.isAir()) {
                 return false;
@@ -309,7 +309,7 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
                                 return true;
                             }
                             case DESTROY -> {
-                                return !isPushDestructible;
+                                return !isCanDestroy;
                             }
                             case PUSH_ONLY -> {
                                 return false;
@@ -344,8 +344,6 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
         if (!airPumpStructureResolver.isCanPush()) {
             return false;
         } else {
-            Map<BlockPos, BlockState> map = Maps.newHashMap();
-
             List<BlockPos> locationsToDestroy = airPumpStructureResolver.getToDestroy();
 
             for (int i = locationsToDestroy.size() - 1; i >= 0; --i) {
@@ -363,10 +361,10 @@ public class AirPumpBaseBlock extends BaseEntityBlock {
 
             PistonType pistonType = PistonType.DEFAULT;
             BlockState pumpHeadState = AIR_PUMP_HEAD.get().defaultBlockState().setValue(AirPumpHeadBlock.FACING, pumpDirection).setValue(AirPumpHeadBlock.TYPE, pistonType);
-            BlockState blockstate6 = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
+            BlockState movingPistonBlockState = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, pumpDirection).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
 
-            level.setBlock(headPos, blockstate6, 68);
-            level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(headPos, blockstate6, pumpHeadState, pumpDirection, true, true));
+            level.setBlock(headPos, movingPistonBlockState, 68);
+            level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(headPos, movingPistonBlockState, pumpHeadState, pumpDirection, true, true));
 
             level.updateNeighborsAt(headPos, AIR_PUMP_HEAD.get());
 

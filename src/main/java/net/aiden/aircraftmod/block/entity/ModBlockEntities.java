@@ -13,7 +13,7 @@ public class ModBlockEntities {
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AircraftMod.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<AirPumpBaseBlockEntity>> AIR_PUMP_BASE =
-            BLOCK_ENTITIES.register("pneumatic_pump_base", () ->
+            BLOCK_ENTITIES.register("air_pump_base", () ->
                     BlockEntityType.Builder.of(AirPumpBaseBlockEntity::new,
                             ModBlocks.AIR_PUMP_BASE.get()).build(null));
 

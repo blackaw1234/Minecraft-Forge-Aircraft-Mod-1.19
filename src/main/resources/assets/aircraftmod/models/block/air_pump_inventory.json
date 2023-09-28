@@ -2,7 +2,7 @@
   "parent": "minecraft:block/cube_bottom_top",
   "textures": {
     "bottom": "minecraft:block/piston_bottom",
-    "side": "aircraftmod:block/pneumatic_pump_side",
+    "side": "aircraftmod:block/air_pump_side",
     "top": "minecraft:block/piston_top"
   }
 }

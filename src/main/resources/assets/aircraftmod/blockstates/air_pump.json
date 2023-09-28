@@ -1,49 +1,49 @@
 {
   "variants": {
     "extended=false,facing=down": {
-      "model": "aircraftmod:block/pneumatic_pump",
+      "model": "aircraftmod:block/air_pump",
       "x": 90
     },
     "extended=false,facing=east": {
-      "model": "aircraftmod:block/pneumatic_pump",
+      "model": "aircraftmod:block/air_pump",
       "y": 90
     },
     "extended=false,facing=north": {
-      "model": "aircraftmod:block/pneumatic_pump"
+      "model": "aircraftmod:block/air_pump"
     },
     "extended=false,facing=south": {
-      "model": "aircraftmod:block/pneumatic_pump",
+      "model": "aircraftmod:block/air_pump",
       "y": 180
     },
     "extended=false,facing=up": {
-      "model": "aircraftmod:block/pneumatic_pump",
+      "model": "aircraftmod:block/air_pump",
       "x": 270
     },
     "extended=false,facing=west": {
-      "model": "aircraftmod:block/pneumatic_pump",
+      "model": "aircraftmod:block/air_pump",
       "y": 270
     },
     "extended=true,facing=down": {
-      "model": "aircraftmod:block/pneumatic_pump_base",
+      "model": "aircraftmod:block/air_pump_base",
       "x": 90
     },
     "extended=true,facing=east": {
-      "model": "aircraftmod:block/pneumatic_pump_base",
+      "model": "aircraftmod:block/air_pump_base",
       "y": 90
     },
     "extended=true,facing=north": {
-      "model": "aircraftmod:block/pneumatic_pump_base"
+      "model": "aircraftmod:block/air_pump_base"
     },
     "extended=true,facing=south": {
-      "model": "aircraftmod:block/pneumatic_pump_base",
+      "model": "aircraftmod:block/air_pump_base",
       "y": 180
     },
     "extended=true,facing=up": {
-      "model": "aircraftmod:block/pneumatic_pump_base",
+      "model": "aircraftmod:block/air_pump_base",
       "x": 270
     },
     "extended=true,facing=west": {
-      "model": "aircraftmod:block/pneumatic_pump_base",
+      "model": "aircraftmod:block/air_pump_base",
       "y": 270
     }
   }

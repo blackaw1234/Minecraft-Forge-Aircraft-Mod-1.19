@@ -44,10 +44,10 @@ public class ModBlocks {
     public static final RegistryObject<Block> JUMPY_BLOCK = registerBlock("jumpy_block",
             () -> new JumpyBlock(BlockBehaviour.Properties.of(Material.STONE)
                     .strength(6f).requiresCorrectToolForDrops()), ModCreativeModeTab.AIRCRAFT_TAB);
-    public static final RegistryObject<Block> AIR_PUMP_BASE = registerBlock("pneumatic_pump",
+    public static final RegistryObject<Block> AIR_PUMP_BASE = registerBlock("air_pump",
             () -> new AirPumpBaseBlock(BlockBehaviour.Properties.of(Material.PISTON)
                     .strength(6f).requiresCorrectToolForDrops()), ModCreativeModeTab.AIRCRAFT_TAB);
-    public static final RegistryObject<Block> AIR_PUMP_HEAD = registerBlock("pneumatic_pump_head",
+    public static final RegistryObject<Block> AIR_PUMP_HEAD = registerBlock("air_pump_head",
             () -> new AirPumpHeadBlock(BlockBehaviour.Properties.of(Material.PISTON)
                     .strength(1.5f).noLootTable()), ModCreativeModeTab.AIRCRAFT_TAB);
 

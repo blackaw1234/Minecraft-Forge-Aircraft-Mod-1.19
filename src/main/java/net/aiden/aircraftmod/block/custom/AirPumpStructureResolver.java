@@ -48,20 +48,20 @@ public class AirPumpStructureResolver {
     }
 
     private boolean addBlockLine(BlockPos movingBlockPos, Direction pushDirection) {
-        BlockState blockstate = level.getBlockState(movingBlockPos);
+        BlockState movingBlockState = level.getBlockState(movingBlockPos);
 
         if (level.isEmptyBlock(movingBlockPos)) {
             return true; //if the block is air
-        } else if (AirPumpBaseBlock.isNotPushable(blockstate, level, movingBlockPos, pushDirection, false)) {
+        } else if (AirPumpBaseBlock.isNotPushable(movingBlockState, level, movingBlockPos, pushDirection, false)) {
             return true; //if the block should break?
         } else if (movingBlockPos.equals(basePos)) {
             return true; //if the pump is extending
         } else {
-            if (!PistonBaseBlock.isPushable(blockstate, level, movingBlockPos, pushDirection, true, pushDirection) || movingBlockPos.equals(basePos)) {
+            if (!PistonBaseBlock.isPushable(movingBlockState, level, movingBlockPos, pushDirection, true, pushDirection) || movingBlockPos.equals(basePos)) {
                 return false;
             }
 
-            if (blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
+            if (movingBlockState.getPistonPushReaction() == PushReaction.DESTROY) {
                 toDestroy.add(movingBlockPos);
                 return true;
             }

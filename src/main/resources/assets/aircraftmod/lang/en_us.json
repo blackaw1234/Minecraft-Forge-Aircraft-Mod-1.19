@@ -9,8 +9,8 @@
   "block.aircraftmod.endstone_zircon_ore": "End Zircon Ore",
   "block.aircraftmod.netherrack_zircon_ore": "Nether Zircon Ore",
   "block.aircraftmod.jumpy_block": "Jumpy Block",
-  "block.aircraftmod.pneumatic_pump": "Pneumatic Pump",
-  "block.aircraftmod.pneumatic_pump_head": "Pneumatic Pump Head",
+  "block.aircraftmod.air_pump": "Air Pump",
+  "block.aircraftmod.air_pump_head": "Air Pump Head",
 
   "itemGroup.aircrafttab": "Zircon Tutorial Tab"
 }
