@@ -12,10 +12,10 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AircraftMod.MOD_ID);
 
-    public static final RegistryObject<BlockEntityType<PneumaticPumpBaseBlockEntity>> PNEUMATIC_PUMP_HEAD =
-            BLOCK_ENTITIES.register("pneumatic_pump_head", () ->
+    public static final RegistryObject<BlockEntityType<PneumaticPumpBaseBlockEntity>> PNEUMATIC_PUMP_BASE =
+            BLOCK_ENTITIES.register("pneumatic_pump_base", () ->
                     BlockEntityType.Builder.of(PneumaticPumpBaseBlockEntity::new,
-                            ModBlocks.PNEUMATIC_PUMP_HEAD.get()).build(null));
+                            ModBlocks.PNEUMATIC_PUMP_BASE.get()).build(null));
 
 
     public static void register(IEventBus eventBus) {

@@ -188,10 +188,10 @@ public class PneumaticPumpBase extends BaseEntityBlock {
      * @param level the "level" (dimension/world?) in which this check is occurring
      * @param basePos location of the base of the pneumatic pump
      * @param extensionFlag determines what the pump base will do to the head and the blocks it faces
-     * @param p_60196_ has something to do with the direction of the block entity
+     * @param direction integer that encodes for six directions among three orthogonal axes
      * @return true if the pump should trigger an event, false otherwise
      */
-    public boolean triggerEvent(BlockState baseState, Level level, BlockPos basePos, int extensionFlag, int p_60196_) {
+    public boolean triggerEvent(BlockState baseState, Level level, BlockPos basePos, int extensionFlag, int direction) {
         Direction pumpDirection = baseState.getValue(FACING);
         if (!level.isClientSide) {
             boolean isOpposed = isOpposed(level, basePos, baseState);
@@ -228,7 +228,7 @@ public class PneumaticPumpBase extends BaseEntityBlock {
             level.setBlock(basePos, blockstate, 20);
             // Block entity? I wonder what this does. Maybe I need to replace some of this.
             level.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(basePos, blockstate, this.defaultBlockState().setValue
-                    (FACING, Direction.from3DDataValue(p_60196_ & 7)), pumpDirection, false, true));
+                    (FACING, Direction.from3DDataValue(direction & 7)), pumpDirection, false, true));
             level.blockUpdated(basePos, blockstate.getBlock());//tell the level that a moving piston got updated at the position of the piston's base
             blockstate.updateNeighbourShapes(level, basePos, 2);
             level.removeBlock(basePos.relative(pumpDirection), false);//remove the piston head
@@ -375,6 +375,6 @@ public class PneumaticPumpBase extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return createTickerHelper(type, ModBlockEntities.PNEUMATIC_PUMP_HEAD.get(), PneumaticPumpBaseBlockEntity::tick);
+        return createTickerHelper(type, ModBlockEntities.PNEUMATIC_PUMP_BASE.get(), PneumaticPumpBaseBlockEntity::tick);
     }
 }
