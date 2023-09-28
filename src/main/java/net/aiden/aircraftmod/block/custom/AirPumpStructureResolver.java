@@ -16,47 +16,53 @@ public class AirPumpStructureResolver {
     private final BlockPos basePos;
     private final Direction pushDirection;
     private final List<BlockPos> toDestroy = Lists.newArrayList();
-    private final Direction pistonDirection;
 
     public AirPumpStructureResolver(Level level, BlockPos basePos, Direction pushDirection) {
         this.level = level;
-        this.pistonDirection = pushDirection;
         this.basePos = basePos;
         this.pushDirection = pushDirection;
         this.headPos = basePos.relative(pushDirection);
     }
 
-    public boolean resolve() {
-        //clear the destroy array
-        this.toDestroy.clear();
+    /**
+     * Checks whether the pump can push the block in front of its base.
+     * Also handles destruction of a block that will be destroyed as a consequence.
+     *
+     * @return true if the pump can push the blocks in front of its base, false otherwise
+     */
+    public boolean isCanPush() {
+        BlockState pushCandidateState = level.getBlockState(headPos);
 
-        BlockState headState = this.level.getBlockState(this.headPos); //blockstate represents the block to be pushed
-        if (AirPumpBaseBlock.isNotPushable(headState, this.level, this.headPos, this.pushDirection, false, this.pistonDirection)) {
-            if (headState.getPistonPushReaction() == PushReaction.DESTROY) {
-                this.toDestroy.add(this.headPos);
-                return true;
+        // Clear the destroy array
+        toDestroy.clear();
+
+        // Check if the block in front of the pump base will be destroyed by motion
+        if (AirPumpBaseBlock.isNotPushable(pushCandidateState, level, headPos, pushDirection, false)) {
+            if (pushCandidateState.getPistonPushReaction() == PushReaction.DESTROY) {
+                toDestroy.add(headPos); // If so, add it to the list for destruction
+                return true; // The structure resolves
             } else {
                 return false;
             }
-        } else if (!this.addBlockLine(this.headPos, this.pushDirection)) return false;
-        else return true;
+        } else return addBlockLine(headPos, pushDirection);
     }
 
     private boolean addBlockLine(BlockPos movingBlockPos, Direction pushDirection) {
-        BlockState blockstate = this.level.getBlockState(movingBlockPos);
+        BlockState blockstate = level.getBlockState(movingBlockPos);
+
         if (level.isEmptyBlock(movingBlockPos)) {
             return true; //if the block is air
-        } else if (AirPumpBaseBlock.isNotPushable(blockstate, this.level, movingBlockPos, this.pushDirection, false, pushDirection)) {
+        } else if (AirPumpBaseBlock.isNotPushable(blockstate, level, movingBlockPos, pushDirection, false)) {
             return true; //if the block should break?
-        } else if (movingBlockPos.equals(this.basePos)) {
-            return true; //if the pump is already extended?
+        } else if (movingBlockPos.equals(basePos)) {
+            return true; //if the pump is extending
         } else {
-            if (!PistonBaseBlock.isPushable(blockstate, this.level, movingBlockPos, this.pushDirection, true, this.pushDirection) || movingBlockPos.equals(this.basePos)) {
+            if (!PistonBaseBlock.isPushable(blockstate, level, movingBlockPos, pushDirection, true, pushDirection) || movingBlockPos.equals(basePos)) {
                 return false;
             }
 
             if (blockstate.getPistonPushReaction() == PushReaction.DESTROY) {
-                this.toDestroy.add(movingBlockPos);
+                toDestroy.add(movingBlockPos);
                 return true;
             }
 
@@ -65,6 +71,6 @@ public class AirPumpStructureResolver {
     }
 
     public List<BlockPos> getToDestroy() {
-        return this.toDestroy;
+        return toDestroy;
     }
 }
